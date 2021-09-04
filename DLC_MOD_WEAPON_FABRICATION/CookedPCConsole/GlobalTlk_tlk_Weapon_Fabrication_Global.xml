@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<tlkFile Name="GlobalTlk_tlk">
+    <string>
+        <id>2444</id>
+        <flags>1</flags>
+        <data>Weapon Fabrication</data>
+    </string>
+    <string>
+        <id>2444001</id>
+        <flags>1</flags>
+        <data>Weapon Fabrication</data>
+    </string>
+    <string>
+        <id>2444002</id>
+        <flags>1</flags>
+        <data>Hello Commander Shepard. I am your Bespoke Weapons Fabrication VI. You may call me "BWFVI".</data>
+    </string>
+    <string>
+        <id>2444003</id>
+        <flags>1</flags>
+        <data>Or "Besweafabvi". Or whatever you want, really.</data>
+    </string>
+    <string>
+        <id>2444004</id>
+        <flags>1</flags>
+        <data>What do you do?</data>
+    </string>
+    <string>
+        <id>2444005</id>
+        <flags>1</flags>
+        <data>I print advanced weaponry to support the needs and engagement styles of your team.</data>
+    </string>
+    <string>
+        <id>2444006</id>
+        <flags>1</flags>
+        <data>I am legally limited by Council copyright; but if you have a manufacturer's license, I can print their stock weaponry.</data>
+    </string>
+    <string>
+        <id>2444007</id>
+        <flags>1</flags>
+        <data>But my capabilities extend far beyond stock weaponry. I can customize nearly every aspect of your fabricated weapons.</data>
+    </string>
+    <string>
+        <id>2444008</id>
+        <flags>1</flags>
+        <data>There is, of course, a material cost in credits for fabrication. And advanced weaponry will require access to specific, sometimes rare, elements.</data>
+    </string>
+    <string>
+        <id>2444009</id>
+        <flags>1</flags>
+        <data>What can you customize?</data>
+    </string>
+    <string>
+        <id>2444010</id>
+        <flags>1</flags>
+        <data>I can customize your weapons' mass effect generators to balance kinetic impact and thermal efficiency.</data>
+    </string>
+    <string>
+        <id>2444011</id>
+        <flags>1</flags>
+        <data>I can customize your weapons' integrated thermal management systems to balance thermal efficiency and cost.</data>
+    </string>
+    <string>
+        <id>2444012</id>
+        <flags>1</flags>
+        <data>I can customize your weapons' targeting and rifling systems to balance accuracy and KICKBACK.</data>
+    </string>
+    <string>
+        <id>2444013</id>
+        <flags>1</flags>
+        <data>Let's customize some weapons.</data>
+    </string>
+</tlkFile>
