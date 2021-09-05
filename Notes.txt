@@ -1,0 +1,230 @@
+
+    m_MuzzleSocketName = 'Flash'
+    m_MuzzleCamSocketName = 'MuzzleCam'
+    m_ImpactParameterName = 'Impact'
+    m_SourceParameterName = 'Source'
+    HeadshotDamageMultiplier = 2.0
+    MinPelletsForPhysics = 4
+    m_fProjectilesSpreadModifier = 0.200000003
+    PortArmsPistolDistance = 15.0
+    PortArmsShotgunDistance = 10.0
+    PortArmsAssaultDistance = 10.0
+    PortArmsSniperDistance = 35.0
+    m_fVehicleFireDistance = 60000.0
+    m_fWeaponFireDistance = 20000.0
+    m_fSniperFireDistance = 40000.0
+    m_fOverlapRecurseBreakoutDistance = 50.0
+    m_nTotalNumberStrips = 10
+    m_nTotalNumberCloseStrips = 2
+    m_nCloseStripLength = 1500.0
+    m_bShootingWhileOverheatedSoundPlayed = TRUE
+    m_bIsMuzzleFlashVFXEnabled = TRUE
+    Begin Object Class=SkeletalMeshComponent Name=oSkeletalMeshComponent
+        ReplacementPrimitive = None
+    End Object
+    SkelMeshComp = oSkeletalMeshComponent
+    Begin Object Class=BioDamageType Name=pDefaultDamage
+        Begin Object Class=BioAttributesDamage Name=s_pAttributes
+        End Object
+        m_pAttributes = s_pAttributes
+    End Object
+    m_pDamage = pDefaultDamage
+    Mesh = oSkeletalMeshComponent
+    Components = (oSkeletalMeshComponent)
+
+
+
+
+
+
+
+
+
+
+    TightAimFiringShake = TightAimFiringShake0
+    AccFirePenalty = 0.5
+    AccFireInterpSpeed = 8.0
+    Recoil = 2.0
+    ZoomRecoil = 3.0
+    RecoilFadeSpeed = 1.10000002
+    RecoilZoomFadeSpeed = 1.29999995
+    RecoilYawScale = 0.5
+    RecoilYawFrequency = 1.0
+    RateOfFire = 36.0
+    Description = $184334
+    bRemapAccToRecoil = TRUE
+    FireMode = FireModes.FireMode_SemiAuto
+
+
+
+
+
+
+
+
+
+
+
+        AimError = (X = 1.29999995, Y = 2.5)
+        ZoomAimError = (X = 0.5, Y = 1.0)
+        DamageRange = (X = 29.3999996, Y = 48.2999992)
+        HeatPerShotRange = (X = 0.0820999965, Y = 0.0680000037)
+        HeatLossRateRange = (X = 0.25, Y = 0.275000006)
+        Begin Object Class=ForceFeedbackWaveform Name=FireRumble0
+            Samples = ((Duration = 0.119999997, LeftAmplitude = 30, RightAmplitude = 30, LeftFunction = EWaveformFunction.WF_LinearDecreasing, RightFunction = EWaveformFunction.WF_LinearDecreasing)
+                      )
+        End Object
+        WeaponFireRumble = FireRumble0
+        Begin Object Class=ForceFeedbackWaveform Name=OverheatRumble0
+        End Object
+        WeaponOverheatedRumble = OverheatRumble0
+        Begin Object Class=SFXCameraShakeBase Name=FiringShake0
+            TheShake = {(
+                         RotAmplitude = (X = 15.0, Y = 7.0, Z = 3.0),
+                         RotFrequency = (X = 80.0, Y = 60.0, Z = 40.0),
+                         TimeDuration = 0.200000003
+                       )}
+        End Object
+        FiringShake = FiringShake0
+        Begin Object Class=SFXCameraShakeBase Name=TightAimFiringShake0
+            TheShake = {(
+                         RotAmplitude = (X = 15.0, Y = 7.0, Z = 3.0),
+                         RotFrequency = (X = 80.0, Y = 60.0, Z = 40.0),
+                         TimeDuration = 0.200000003
+                       )}
+        End Object
+        TightAimFiringShake = TightAimFiringShake0
+        AccFirePenalty = 35.0
+        AccFireInterpSpeed = 40.0
+        ZoomAccFirePenalty = 35.0
+        ZoomAccFireInterpSpeed = 40.0
+        Recoil = 0.100000001
+        ZoomRecoil = 0.119999997
+        RecoilYawScale = 0.25
+        RecoilYawFrequency = 0.5
+        RateOfFire = 400.0
+        RampFirePct = 0.5
+        RampFireTime = 1.79999995
+        Description = $184309
+        UIDPSFudgeFactor = 1.20000005
+        FireMode = FireModes.FireMode_Ramping
+
+
+
+
+
+
+
+
+
+
+        //class default properties can be edited in the Properties tab for the class's Default__ object.
+        defaultproperties
+        {
+            PelletSpread = ((X = 0.0, Y = 0.0),
+                            (X = -240.0, Y = 415.0),
+                            (X = -480.0, Y = 0.0),
+                            (X = -240.0, Y = -415.0),
+                            (X = 240.0, Y = -415.0),
+                            (X = 480.0, Y = 0.0),
+                            (X = 240.0, Y = 415.0)
+                           )
+            MaleWeaponAnimSets = (AnimSet'BIOG_HMM_CB_A.HMM_CB_ShotgunHolster', AnimSet'BIOG_HMM_DG_A.HMM_DG_Rifle', AnimSet'BIOG_HMM_CB_A.HMM_CB_Rifle', AnimSet'BIOG_HMM_CB_A.HMM_CB_RifleAuto', AnimSet'BIOG_HMM_CB_A.HMM_CB_RifleCover')
+            FemaleWeaponAnimSets = (AnimSet'BIOG_HMF_EX_A.HMF_EX_Rifle')
+            AimError = (X = 4.5, Y = 6.5)
+            ZoomAimError = (X = 4.5, Y = 6.5)
+            DamageRange = (X = 5.98000002, Y = 11.0299997)
+            HeatPerShotRange = (X = 0.294999987, Y = 0.25)
+            HeatLossRateRange = (X = 0.224999994, Y = 0.25)
+            DrawAnimset = AnimSet'BIOG_HMM_CB_A.HMM_CB_ShotgunDraw'
+            Begin Object Class=ForceFeedbackWaveform Name=FireRumble0
+                Samples = ((Duration = 0.200000003, LeftAmplitude = 100, RightAmplitude = 80, LeftFunction = EWaveformFunction.WF_Sin90to180, RightFunction = EWaveformFunction.WF_Sin0to180)
+                          )
+            End Object
+            WeaponFireRumble = FireRumble0
+            Begin Object Class=ForceFeedbackWaveform Name=OverheatRumble0
+            End Object
+            WeaponOverheatedRumble = OverheatRumble0
+            Begin Object Class=SFXCameraShakeBase Name=FiringShake0
+                TheShake = {(
+                             RotAmplitude = (X = 60.0, Y = 30.0, Z = 15.0),
+                             RotFrequency = (X = 80.0, Y = 80.0, Z = 80.0),
+                             TimeDuration = 0.200000003
+                           )}
+            End Object
+            FiringShake = FiringShake0
+            Begin Object Class=SFXCameraShakeBase Name=TightAimFiringShake0
+                TheShake = {(
+                             RotAmplitude = (X = 60.0, Y = 30.0, Z = 15.0),
+                             RotFrequency = (X = 80.0, Y = 80.0, Z = 80.0),
+                             TimeDuration = 0.200000003
+                           )}
+            End Object
+            TightAimFiringShake = TightAimFiringShake0
+            AccFirePenalty = 10.0
+            AccFireInterpSpeed = 30.0
+            ZoomAccFirePenalty = 10.0
+            ZoomAccFireInterpSpeed = 30.0
+            Recoil = 0.25
+            ZoomRecoil = 0.5
+            RecoilYawScale = 0.5
+            RateOfFire = 165.0
+            Description = $184320
+            bScaleFireAnimByFireRate = TRUE
+            bOverrideAnimsets = TRUE
+            FireMode = FireModes.FireMode_FullAuto
+        }
+
+
+
+
+
+
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    AimError = (X = 0.800000012, Y = 5.4000001)
+    ZoomAimError = (X = 0.5, Y = 2.79999995)
+    DamageRange = (X = 67.1999969, Y = 110.400002)
+    HeatPerShotRange = (X = 0.152999997, Y = 0.1391)
+    HeatLossRateRange = (X = 0.324999988, Y = 0.349999994)
+    Begin Object Class=ForceFeedbackWaveform Name=FireRumble0
+        Samples = ((Duration = 0.224999994, LeftAmplitude = 80, RightAmplitude = 80, LeftFunction = EWaveformFunction.WF_Sin90to180, RightFunction = EWaveformFunction.WF_Sin90to180)
+                  )
+    End Object
+    WeaponFireRumble = FireRumble0
+    Begin Object Class=ForceFeedbackWaveform Name=OverheatRumble0
+    End Object
+    WeaponOverheatedRumble = OverheatRumble0
+    Begin Object Class=SFXCameraShakeBase Name=FiringShake0
+        TheShake = {(
+                     RotAmplitude = (X = 30.0, Y = 20.0, Z = 10.0),
+                     RotFrequency = (X = 30.0, Y = 15.0, Z = 8.0),
+                     TimeDuration = 0.200000003
+                   )}
+    End Object
+    FiringShake = FiringShake0
+    Begin Object Class=SFXCameraShakeBase Name=TightAimFiringShake0
+        TheShake = {(
+                     RotAmplitude = (X = 30.0, Y = 20.0, Z = 10.0),
+                     RotFrequency = (X = 30.0, Y = 15.0, Z = 8.0),
+                     TimeDuration = 0.200000003
+                   )}
+    End Object
+    TightAimFiringShake = TightAimFiringShake0
+    AccFirePenalty = 15.0
+    AccFireInterpSpeed = 30.0
+    ZoomAccFirePenalty = 15.0
+    ZoomAccFireInterpSpeed = 30.0
+    Recoil = 0.5
+    ZoomRecoil = 0.800000012
+    RecoilFadeSpeed = 0.600000024
+    RecoilZoomFadeSpeed = 0.600000024
+    RecoilYawScale = 0.100000001
+    RecoilYawFrequency = 0.5
+    RateOfFire = 200.0
+    Description = $184317
+    UIDPSFudgeFactor = 0.75
+    FireMode = FireModes.FireMode_SemiAuto
+}
