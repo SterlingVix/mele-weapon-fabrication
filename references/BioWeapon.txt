@@ -1,0 +1,84 @@
+Class BioWeapon extends Weapon
+    native
+    localized
+    config(Weapon);
+
+// Variables
+var config LinearColor m_vActivatedMatParamColor_Active;
+var config LinearColor m_vActivatedMatParamColor_Inactive;
+var export SkeletalMeshComponent SkelMeshComp;
+var BioItemWeapon m_oItem;
+var export SkeletalMeshComponent AttachedMesh;
+var Name AttachedBone;
+var Pawn AttachPawn;
+var config Name m_nActivatedMatParamName;
+var export BioDamageType m_pDamage;
+
+// Functions
+public event function InitializeWeapon();
+
+public native function BioPawn DeactivateWeapon();
+
+public native function BioPawn ActivateWeapon();
+
+public native function float GetFractionOfEffectsMaterialEnabled();
+
+public native function SetFractionOfEffectsMaterialEnabled(float FractionEnabled);
+
+public native function EEffectsMaterialType GetEffectsMaterialType();
+
+public native function SetEffectsMaterialType(EEffectsMaterialType EffectsMaterialType);
+
+public native function UpdateAppearance();
+
+public native function Pawn DetachFromPawn(optional bool bCinematicsMode);
+
+public native function BioItemWeapon ClearItem();
+
+public native function BioItemWeapon SetItem(BioItemWeapon oItem);
+
+public simulated function Actor GetTraceOwner()
+{
+    return Instigator != None ? Instigator : Self;
+}
+public function OnEffectsMaterial(BioSeqAct_EffectsMaterial Action)
+{
+    Action.SetUpInputs();
+    if (Action.NeedToSetType)
+    {
+        SetEffectsMaterialType(Action.TypeValue);
+    }
+    if (Action.NeedToSetAlpha)
+    {
+        SetFractionOfEffectsMaterialEnabled(Action.AlphaValue);
+    }
+    Action.TypeValue = GetEffectsMaterialType();
+    Action.AlphaValue = GetFractionOfEffectsMaterialEnabled();
+}
+public event function ProxyPlaySound(SoundCue SoundCue)
+{
+    PlaySound(SoundCue);
+}
+public event native function bool AttachToMesh(SkeletalMeshComponent MeshComponent, optional Name SocketName, optional bool bCinematicsMode);
+
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    m_vActivatedMatParamColor_Active = (R = 1.0, G = 2.0, B = 20.0, A = 1.0)
+    m_vActivatedMatParamColor_Inactive = (R = 20.0, G = 2.0, B = 1.0, A = 1.0)
+    Begin Object Class=SkeletalMeshComponent Name=oSkeletalMeshComponent
+        SkeletalMesh = SkeletalMesh'IW_Grenade.grenade1'
+        ReplacementPrimitive = None
+    End Object
+    SkelMeshComp = oSkeletalMeshComponent
+    m_nActivatedMatParamName = 'WPN_MASTER_Emis_ColourTint'
+    Begin Object Class=BioDamageType Name=pDefaultDamage
+        Begin Object Class=BioAttributesDamage Name=s_pAttributes
+        End Object
+        m_pAttributes = s_pAttributes
+    End Object
+    m_pDamage = pDefaultDamage
+    Mesh = oSkeletalMeshComponent
+    Components = (oSkeletalMeshComponent)
+}

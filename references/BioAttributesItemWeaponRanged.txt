@@ -1,0 +1,608 @@
+Class BioAttributesItemWeaponRanged extends BioAttributesItemWeapon
+    native
+    config(Game);
+
+// Types
+enum EWeaponPowerMode
+{
+    WEAPON_POWER_MODE_NONE,
+    WEAPON_POWER_MODE_MARKSMAN,
+    WEAPON_POWER_MODE_SUPPRESSION,
+    WEAPON_POWER_MODE_ASSASSINATION,
+    WEAPON_POWER_MODE_CARNAGE,
+};
+
+// Variables
+var BioComplexIntStructAttribute m_pExplosionEnabled;
+var BioComplexIntStructAttribute m_pImpactDelayEnabled;
+var BioComplexIntStructAttribute m_ProjectilesFired;
+var BioComplexIntStructAttribute m_vfxType;
+var BioComplexFloatStructAttribute m_Kickback;
+var BioComplexFloatStructAttribute m_RoundsPerSec;
+var BioComplexFloatStructAttribute m_DriftAngleMax;
+var BioComplexFloatStructAttribute m_ProjectilesSpreadAngle;
+var BioComplexFloatStructAttribute m_TrackingPenalty;
+var BioComplexFloatStructAttribute m_DriftAngleMin;
+var BioComplexFloatStructAttribute m_TargetIndicatorFixedDistance;
+var BioComplexFloatStructAttribute m_SelHalfAngleFar;
+var BioComplexFloatStructAttribute m_SelHalfAngleClose;
+var BioComplexFloatStructAttribute m_SelRangeFar;
+var BioComplexFloatStructAttribute m_SelRangeClose;
+var BioComplexFloatStructAttribute m_HeatPerShot;
+var BioComplexFloatStructAttribute m_HeatMax;
+var BioComplexFloatStructAttribute m_HeatLossRate;
+var BioComplexFloatStructAttribute m_HeatLossRateWhileOverheated;
+var BioComplexFloatStructAttribute m_HeatMin;
+var BioComplexFloatStructAttribute m_MagneticLockHalfAngleFarZoom;
+var BioComplexFloatStructAttribute m_MagneticLockHalfAngleCloseZoom;
+var BioComplexFloatStructAttribute m_MagneticLockRangeFarZoom;
+var BioComplexFloatStructAttribute m_MagneticLockRangeCloseZoom;
+var Name m_nmPowerToUse;
+var(Ranged) float m_minZoomFOV;
+var(Ranged) float m_maxZoomFOV;
+var(Ranged) float m_zoomRate;
+var(Ranged) float m_zoomCameraOffsetX;
+var(Ranged) float m_zoomCameraOffsetY;
+var(Ranged) float m_zoomCameraOffsetZ;
+var(Ranged) float m_zoomKickbackDuration;
+var(Ranged) float m_zoomSettleDuration;
+var(Explosion) float m_fExplosionRadius;
+var(Explosion) float m_fExplosionMomentum;
+var(Explosion) float m_nMaxTargetZones;
+var(Explosion) float m_fDamagePerExplosion;
+var(Explosion) float m_fImpactOriginOffsetAlongNegatedNormal;
+var(Explosion) float m_fImpactDelayProjectileSpeed;
+var(Physics) float m_fWeaponRecoilImpulse;
+var float m_VFXLevel;
+var int m_nPowerCount;
+var(Ranged) config float TEMP_CONFIG_m_DriftAngleMin;
+var(Ranged) config float TEMP_CONFIG_m_ImpactJumpPerShot;
+var(Ranged) config float TEMP_CONFIG_m_ImpactRollStepSizeMax;
+var(Ranged) config float TEMP_CONFIG_m_DriftAngleMax;
+var(Ranged) config float TEMP_CONFIG_m_ImpactAngle;
+var(Ranged) config float TEMP_CONFIG_m_ImpactTrackingSpeed;
+var(Ranged) config float TEMP_CONFIG_m_Kickback;
+var(Ranged) config float TEMP_CONFIG_m_TrackingPenalty;
+var(Ranged) config float TEMP_CONFIG_m_SelHalfAngleClose;
+var(Ranged) config float TEMP_CONFIG_m_SelHalfAngleFar;
+var(Ranged) config float TEMP_CONFIG_m_SelRangeClose;
+var(Ranged) config float TEMP_CONFIG_m_SelRangeFar;
+var(Ranged) config float TEMP_CONFIG_m_HeatPerShot;
+var(Ranged) config float TEMP_CONFIG_m_HeatMax;
+var(Ranged) config float TEMP_CONFIG_m_HeatLossRate;
+var(Ranged) config float TEMP_CONFIG_m_HeatLossRateWhileOverheated;
+var(Ranged) config float TEMP_CONFIG_m_HeatMin;
+var(Ranged) bool m_FullAuto;
+var(Ranged) bool m_SupressionFire;
+var(Ranged) bool m_isSecondaryMuzzleFlashEnabled;
+var(Ranged) bool m_hasFired;
+var EWeaponPowerMode m_ePowerMode;
+
+// Functions
+public event function DescribeAttributes()
+{
+    Super.DescribeAttributes();
+    LogInternal("    m_DriftAngleMin=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_DriftAngleMin), );
+    LogInternal("    m_FullAuto=" @ m_FullAuto, );
+    LogInternal("    m_SupressionFire=" @ m_SupressionFire, );
+    LogInternal("    m_ProjectilesFired=" @ Class'BioAttributes'.static.GetCurrentIntValue(m_ProjectilesFired), );
+    LogInternal("    m_Kickback=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_Kickback), );
+    LogInternal("    m_RoundsPerSec=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_RoundsPerSec), );
+    LogInternal("    m_DriftAngleMax=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_DriftAngleMax), );
+    LogInternal("    m_ProjectilesSpreadAngle=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_ProjectilesSpreadAngle), );
+    LogInternal("    m_TrackingPenalty=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_TrackingPenalty), );
+    LogInternal("    m_vfxType=" @ Class'BioAttributes'.static.GetCurrentIntValue(m_vfxType), );
+    LogInternal("    m_SelectionHalfAngleClose=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_SelHalfAngleClose), );
+    LogInternal("    m_SelectionHalfAngleFar=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_SelHalfAngleFar), );
+    LogInternal("    m_SelectionRangeClose=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_SelRangeClose), );
+    LogInternal("    m_SelectionRangeFar=" @ Class'BioAttributes'.static.GetCurrentFloatValue(m_SelRangeFar), );
+}
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    m_pExplosionEnabled = {(
+                            m_baseOverrides = (),
+                            m_isBaseOverrideValid = (),
+                            m_modifiers = 0,
+                            m_modifiers = 1,
+                            m_modifiers = 1,
+                            m_modifiers = 0,
+                            m_isModifierEnabled = 1,
+                            m_isModifierEnabled = 1,
+                            m_isModifierEnabled = 1,
+                            m_isModifierEnabled = 1,
+                            m_LookupTable = None,
+                            m_Base = 0,
+                            m_Current = 0,
+                            m_Max = 2147483647,
+                            m_Min = 0,
+                            m_TableColumn = -1,
+                            m_isBaseOverrideInEffect = FALSE,
+                            m_Dirty = FALSE
+                          )}
+    m_pImpactDelayEnabled = {(
+                              m_baseOverrides = (),
+                              m_isBaseOverrideValid = (),
+                              m_modifiers = 0,
+                              m_modifiers = 1,
+                              m_modifiers = 1,
+                              m_modifiers = 0,
+                              m_isModifierEnabled = 1,
+                              m_isModifierEnabled = 1,
+                              m_isModifierEnabled = 1,
+                              m_isModifierEnabled = 1,
+                              m_LookupTable = None,
+                              m_Base = 0,
+                              m_Current = 0,
+                              m_Max = 2147483647,
+                              m_Min = 0,
+                              m_TableColumn = -1,
+                              m_isBaseOverrideInEffect = FALSE,
+                              m_Dirty = FALSE
+                            )}
+    m_ProjectilesFired = {(
+                           m_baseOverrides = (),
+                           m_isBaseOverrideValid = (),
+                           m_modifiers = 0,
+                           m_modifiers = 1,
+                           m_modifiers = 1,
+                           m_modifiers = 0,
+                           m_isModifierEnabled = 1,
+                           m_isModifierEnabled = 1,
+                           m_isModifierEnabled = 1,
+                           m_isModifierEnabled = 1,
+                           m_LookupTable = None,
+                           m_Base = 0,
+                           m_Current = 0,
+                           m_Max = 2147483647,
+                           m_Min = 0,
+                           m_TableColumn = -1,
+                           m_isBaseOverrideInEffect = FALSE,
+                           m_Dirty = FALSE
+                         )}
+    m_vfxType = {(
+                  m_baseOverrides = (),
+                  m_isBaseOverrideValid = (),
+                  m_modifiers = 0,
+                  m_modifiers = 1,
+                  m_modifiers = 1,
+                  m_modifiers = 0,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_LookupTable = None,
+                  m_Base = 0,
+                  m_Current = 0,
+                  m_Max = 2147483647,
+                  m_Min = 0,
+                  m_TableColumn = -1,
+                  m_isBaseOverrideInEffect = FALSE,
+                  m_Dirty = FALSE
+                )}
+    m_Kickback = {(
+                   m_baseOverrides = (),
+                   m_isBaseOverrideValid = (),
+                   m_modifiers = 0.0,
+                   m_modifiers = 1.0,
+                   m_modifiers = 1.0,
+                   m_modifiers = 0.0,
+                   m_isModifierEnabled = 1,
+                   m_isModifierEnabled = 1,
+                   m_isModifierEnabled = 1,
+                   m_isModifierEnabled = 1,
+                   m_LookupTable = None,
+                   m_Base = 0.0,
+                   m_Current = 0.0,
+                   m_Max = 3.39999995e38,
+                   m_Min = 0.0,
+                   m_TableColumn = -1,
+                   m_isBaseOverrideInEffect = FALSE,
+                   m_Dirty = FALSE
+                 )}
+    m_RoundsPerSec = {(
+                       m_baseOverrides = (),
+                       m_isBaseOverrideValid = (),
+                       m_modifiers = 0.0,
+                       m_modifiers = 1.0,
+                       m_modifiers = 1.0,
+                       m_modifiers = 0.0,
+                       m_isModifierEnabled = 1,
+                       m_isModifierEnabled = 1,
+                       m_isModifierEnabled = 1,
+                       m_isModifierEnabled = 1,
+                       m_LookupTable = None,
+                       m_Base = 0.0,
+                       m_Current = 0.0,
+                       m_Max = 3.39999995e38,
+                       m_Min = 0.0,
+                       m_TableColumn = -1,
+                       m_isBaseOverrideInEffect = FALSE,
+                       m_Dirty = FALSE
+                     )}
+    m_DriftAngleMax = {(
+                        m_baseOverrides = (),
+                        m_isBaseOverrideValid = (),
+                        m_modifiers = 0.0,
+                        m_modifiers = 1.0,
+                        m_modifiers = 1.0,
+                        m_modifiers = 0.0,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_LookupTable = None,
+                        m_Base = 0.0,
+                        m_Current = 0.0,
+                        m_Max = 3.39999995e38,
+                        m_Min = 0.0,
+                        m_TableColumn = -1,
+                        m_isBaseOverrideInEffect = FALSE,
+                        m_Dirty = FALSE
+                      )}
+    m_ProjectilesSpreadAngle = {(
+                                 m_baseOverrides = (),
+                                 m_isBaseOverrideValid = (),
+                                 m_modifiers = 0.0,
+                                 m_modifiers = 1.0,
+                                 m_modifiers = 1.0,
+                                 m_modifiers = 0.0,
+                                 m_isModifierEnabled = 1,
+                                 m_isModifierEnabled = 1,
+                                 m_isModifierEnabled = 1,
+                                 m_isModifierEnabled = 1,
+                                 m_LookupTable = None,
+                                 m_Base = 0.0,
+                                 m_Current = 0.0,
+                                 m_Max = 3.39999995e38,
+                                 m_Min = 0.0,
+                                 m_TableColumn = -1,
+                                 m_isBaseOverrideInEffect = FALSE,
+                                 m_Dirty = FALSE
+                               )}
+    m_TrackingPenalty = {(
+                          m_baseOverrides = (),
+                          m_isBaseOverrideValid = (),
+                          m_modifiers = 0.0,
+                          m_modifiers = 1.0,
+                          m_modifiers = 1.0,
+                          m_modifiers = 0.0,
+                          m_isModifierEnabled = 1,
+                          m_isModifierEnabled = 1,
+                          m_isModifierEnabled = 1,
+                          m_isModifierEnabled = 1,
+                          m_LookupTable = None,
+                          m_Base = 0.0,
+                          m_Current = 0.0,
+                          m_Max = 3.39999995e38,
+                          m_Min = 0.0,
+                          m_TableColumn = -1,
+                          m_isBaseOverrideInEffect = FALSE,
+                          m_Dirty = FALSE
+                        )}
+    m_DriftAngleMin = {(
+                        m_baseOverrides = (),
+                        m_isBaseOverrideValid = (),
+                        m_modifiers = 0.0,
+                        m_modifiers = 1.0,
+                        m_modifiers = 1.0,
+                        m_modifiers = 0.0,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_LookupTable = None,
+                        m_Base = 0.0,
+                        m_Current = 0.0,
+                        m_Max = 3.39999995e38,
+                        m_Min = 0.0,
+                        m_TableColumn = -1,
+                        m_isBaseOverrideInEffect = FALSE,
+                        m_Dirty = FALSE
+                      )}
+    m_TargetIndicatorFixedDistance = {(
+                                       m_baseOverrides = (),
+                                       m_isBaseOverrideValid = (),
+                                       m_modifiers = 0.0,
+                                       m_modifiers = 1.0,
+                                       m_modifiers = 1.0,
+                                       m_modifiers = 0.0,
+                                       m_isModifierEnabled = 1,
+                                       m_isModifierEnabled = 1,
+                                       m_isModifierEnabled = 1,
+                                       m_isModifierEnabled = 1,
+                                       m_LookupTable = None,
+                                       m_Base = 0.0,
+                                       m_Current = 0.0,
+                                       m_Max = 3.39999995e38,
+                                       m_Min = 0.0,
+                                       m_TableColumn = -1,
+                                       m_isBaseOverrideInEffect = FALSE,
+                                       m_Dirty = FALSE
+                                     )}
+    m_SelHalfAngleFar = {(
+                          m_baseOverrides = (),
+                          m_isBaseOverrideValid = (),
+                          m_modifiers = 0.0,
+                          m_modifiers = 1.0,
+                          m_modifiers = 1.0,
+                          m_modifiers = 0.0,
+                          m_isModifierEnabled = 1,
+                          m_isModifierEnabled = 1,
+                          m_isModifierEnabled = 1,
+                          m_isModifierEnabled = 1,
+                          m_LookupTable = None,
+                          m_Base = 0.0,
+                          m_Current = 0.0,
+                          m_Max = 3.39999995e38,
+                          m_Min = 0.0,
+                          m_TableColumn = -1,
+                          m_isBaseOverrideInEffect = FALSE,
+                          m_Dirty = FALSE
+                        )}
+    m_SelHalfAngleClose = {(
+                            m_baseOverrides = (),
+                            m_isBaseOverrideValid = (),
+                            m_modifiers = 0.0,
+                            m_modifiers = 1.0,
+                            m_modifiers = 1.0,
+                            m_modifiers = 0.0,
+                            m_isModifierEnabled = 1,
+                            m_isModifierEnabled = 1,
+                            m_isModifierEnabled = 1,
+                            m_isModifierEnabled = 1,
+                            m_LookupTable = None,
+                            m_Base = 0.0,
+                            m_Current = 0.0,
+                            m_Max = 3.39999995e38,
+                            m_Min = 0.0,
+                            m_TableColumn = -1,
+                            m_isBaseOverrideInEffect = FALSE,
+                            m_Dirty = FALSE
+                          )}
+    m_SelRangeFar = {(
+                      m_baseOverrides = (),
+                      m_isBaseOverrideValid = (),
+                      m_modifiers = 0.0,
+                      m_modifiers = 1.0,
+                      m_modifiers = 1.0,
+                      m_modifiers = 0.0,
+                      m_isModifierEnabled = 1,
+                      m_isModifierEnabled = 1,
+                      m_isModifierEnabled = 1,
+                      m_isModifierEnabled = 1,
+                      m_LookupTable = None,
+                      m_Base = 0.0,
+                      m_Current = 0.0,
+                      m_Max = 3.39999995e38,
+                      m_Min = 0.0,
+                      m_TableColumn = -1,
+                      m_isBaseOverrideInEffect = FALSE,
+                      m_Dirty = FALSE
+                    )}
+    m_SelRangeClose = {(
+                        m_baseOverrides = (),
+                        m_isBaseOverrideValid = (),
+                        m_modifiers = 0.0,
+                        m_modifiers = 1.0,
+                        m_modifiers = 1.0,
+                        m_modifiers = 0.0,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_isModifierEnabled = 1,
+                        m_LookupTable = None,
+                        m_Base = 0.0,
+                        m_Current = 0.0,
+                        m_Max = 3.39999995e38,
+                        m_Min = 0.0,
+                        m_TableColumn = -1,
+                        m_isBaseOverrideInEffect = FALSE,
+                        m_Dirty = FALSE
+                      )}
+    m_HeatPerShot = {(
+                      m_baseOverrides = (),
+                      m_isBaseOverrideValid = (),
+                      m_modifiers = 0.0,
+                      m_modifiers = 1.0,
+                      m_modifiers = 1.0,
+                      m_modifiers = 0.0,
+                      m_isModifierEnabled = 1,
+                      m_isModifierEnabled = 1,
+                      m_isModifierEnabled = 1,
+                      m_isModifierEnabled = 1,
+                      m_LookupTable = None,
+                      m_Base = 0.0,
+                      m_Current = 0.0,
+                      m_Max = 3.39999995e38,
+                      m_Min = 0.0,
+                      m_TableColumn = -1,
+                      m_isBaseOverrideInEffect = FALSE,
+                      m_Dirty = FALSE
+                    )}
+    m_HeatMax = {(
+                  m_baseOverrides = (),
+                  m_isBaseOverrideValid = (),
+                  m_modifiers = 0.0,
+                  m_modifiers = 1.0,
+                  m_modifiers = 1.0,
+                  m_modifiers = 0.0,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_LookupTable = None,
+                  m_Base = 0.0,
+                  m_Current = 0.0,
+                  m_Max = 3.39999995e38,
+                  m_Min = 0.0,
+                  m_TableColumn = -1,
+                  m_isBaseOverrideInEffect = FALSE,
+                  m_Dirty = FALSE
+                )}
+    m_HeatLossRate = {(
+                       m_baseOverrides = (),
+                       m_isBaseOverrideValid = (),
+                       m_modifiers = 0.0,
+                       m_modifiers = 1.0,
+                       m_modifiers = 1.0,
+                       m_modifiers = 0.0,
+                       m_isModifierEnabled = 1,
+                       m_isModifierEnabled = 1,
+                       m_isModifierEnabled = 1,
+                       m_isModifierEnabled = 1,
+                       m_LookupTable = None,
+                       m_Base = 0.0,
+                       m_Current = 0.0,
+                       m_Max = 3.39999995e38,
+                       m_Min = 0.0,
+                       m_TableColumn = -1,
+                       m_isBaseOverrideInEffect = FALSE,
+                       m_Dirty = FALSE
+                     )}
+    m_HeatLossRateWhileOverheated = {(
+                                      m_baseOverrides = (),
+                                      m_isBaseOverrideValid = (),
+                                      m_modifiers = 0.0,
+                                      m_modifiers = 1.0,
+                                      m_modifiers = 1.0,
+                                      m_modifiers = 0.0,
+                                      m_isModifierEnabled = 1,
+                                      m_isModifierEnabled = 1,
+                                      m_isModifierEnabled = 1,
+                                      m_isModifierEnabled = 1,
+                                      m_LookupTable = None,
+                                      m_Base = 0.0,
+                                      m_Current = 0.0,
+                                      m_Max = 3.39999995e38,
+                                      m_Min = 0.0,
+                                      m_TableColumn = -1,
+                                      m_isBaseOverrideInEffect = FALSE,
+                                      m_Dirty = FALSE
+                                    )}
+    m_HeatMin = {(
+                  m_baseOverrides = (),
+                  m_isBaseOverrideValid = (),
+                  m_modifiers = 0.0,
+                  m_modifiers = 1.0,
+                  m_modifiers = 1.0,
+                  m_modifiers = 0.0,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_isModifierEnabled = 1,
+                  m_LookupTable = None,
+                  m_Base = 0.0,
+                  m_Current = 0.0,
+                  m_Max = 3.39999995e38,
+                  m_Min = 0.0,
+                  m_TableColumn = -1,
+                  m_isBaseOverrideInEffect = FALSE,
+                  m_Dirty = FALSE
+                )}
+    m_MagneticLockHalfAngleFarZoom = {(
+                                       m_baseOverrides = (),
+                                       m_isBaseOverrideValid = (),
+                                       m_modifiers = 0.0,
+                                       m_modifiers = 1.0,
+                                       m_modifiers = 1.0,
+                                       m_modifiers = 0.0,
+                                       m_isModifierEnabled = 1,
+                                       m_isModifierEnabled = 1,
+                                       m_isModifierEnabled = 1,
+                                       m_isModifierEnabled = 1,
+                                       m_LookupTable = None,
+                                       m_Base = 0.0,
+                                       m_Current = 0.0,
+                                       m_Max = 3.39999995e38,
+                                       m_Min = 0.0,
+                                       m_TableColumn = -1,
+                                       m_isBaseOverrideInEffect = FALSE,
+                                       m_Dirty = FALSE
+                                     )}
+    m_MagneticLockHalfAngleCloseZoom = {(
+                                         m_baseOverrides = (),
+                                         m_isBaseOverrideValid = (),
+                                         m_modifiers = 0.0,
+                                         m_modifiers = 1.0,
+                                         m_modifiers = 1.0,
+                                         m_modifiers = 0.0,
+                                         m_isModifierEnabled = 1,
+                                         m_isModifierEnabled = 1,
+                                         m_isModifierEnabled = 1,
+                                         m_isModifierEnabled = 1,
+                                         m_LookupTable = None,
+                                         m_Base = 0.0,
+                                         m_Current = 0.0,
+                                         m_Max = 3.39999995e38,
+                                         m_Min = 0.0,
+                                         m_TableColumn = -1,
+                                         m_isBaseOverrideInEffect = FALSE,
+                                         m_Dirty = FALSE
+                                       )}
+    m_MagneticLockRangeFarZoom = {(
+                                   m_baseOverrides = (),
+                                   m_isBaseOverrideValid = (),
+                                   m_modifiers = 0.0,
+                                   m_modifiers = 1.0,
+                                   m_modifiers = 1.0,
+                                   m_modifiers = 0.0,
+                                   m_isModifierEnabled = 1,
+                                   m_isModifierEnabled = 1,
+                                   m_isModifierEnabled = 1,
+                                   m_isModifierEnabled = 1,
+                                   m_LookupTable = None,
+                                   m_Base = 0.0,
+                                   m_Current = 0.0,
+                                   m_Max = 3.39999995e38,
+                                   m_Min = 0.0,
+                                   m_TableColumn = -1,
+                                   m_isBaseOverrideInEffect = FALSE,
+                                   m_Dirty = FALSE
+                                 )}
+    m_MagneticLockRangeCloseZoom = {(
+                                     m_baseOverrides = (),
+                                     m_isBaseOverrideValid = (),
+                                     m_modifiers = 0.0,
+                                     m_modifiers = 1.0,
+                                     m_modifiers = 1.0,
+                                     m_modifiers = 0.0,
+                                     m_isModifierEnabled = 1,
+                                     m_isModifierEnabled = 1,
+                                     m_isModifierEnabled = 1,
+                                     m_isModifierEnabled = 1,
+                                     m_LookupTable = None,
+                                     m_Base = 0.0,
+                                     m_Current = 0.0,
+                                     m_Max = 3.39999995e38,
+                                     m_Min = 0.0,
+                                     m_TableColumn = -1,
+                                     m_isBaseOverrideInEffect = FALSE,
+                                     m_Dirty = FALSE
+                                   )}
+    m_minZoomFOV = 22.5
+    m_maxZoomFOV = 2.5
+    m_zoomRate = 10.0
+    m_zoomCameraOffsetY = 100.0
+    m_zoomKickbackDuration = 0.100000001
+    m_zoomSettleDuration = 0.5
+    m_fImpactDelayProjectileSpeed = 5000.0
+    m_fWeaponRecoilImpulse = 500.0
+    TEMP_CONFIG_m_DriftAngleMin = 2.0
+    TEMP_CONFIG_m_ImpactJumpPerShot = 0.200000003
+    TEMP_CONFIG_m_ImpactRollStepSizeMax = 60.0
+    TEMP_CONFIG_m_DriftAngleMax = 5.0
+    TEMP_CONFIG_m_ImpactAngle = 0.5
+    TEMP_CONFIG_m_ImpactTrackingSpeed = 4.0
+    TEMP_CONFIG_m_Kickback = 0.0500000007
+    TEMP_CONFIG_m_TrackingPenalty = 0.5
+    TEMP_CONFIG_m_SelHalfAngleClose = 12.0
+    TEMP_CONFIG_m_SelHalfAngleFar = 8.0
+    TEMP_CONFIG_m_SelRangeClose = 500.0
+    TEMP_CONFIG_m_SelRangeFar = 1000.0
+    TEMP_CONFIG_m_HeatMax = 1.0
+    TEMP_CONFIG_m_HeatLossRate = 1.0
+    TEMP_CONFIG_m_HeatLossRateWhileOverheated = 1.0
+    m_FullAuto = TRUE
+}

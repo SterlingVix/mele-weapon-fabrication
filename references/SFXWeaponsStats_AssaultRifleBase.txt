@@ -1,0 +1,31 @@
+Class SFXWeaponStats_AssaultRifleBase extends SFXWeaponStatsBase within BioWeaponRanged
+    config(Weapon);
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    AccBonusMapping = {(
+                        Points = ((InVal = 0.5, OutVal = 10.0, ArriveTangent = 0.0, LeaveTangent = 0.0, InterpMode = EInterpCurveMode.CIM_Linear),
+                                  (InVal = 1.0, OutVal = 0.0, ArriveTangent = 0.0, LeaveTangent = 0.0, InterpMode = EInterpCurveMode.CIM_Linear),
+                                  (InVal = 1.30999994, OutVal = -10.0, ArriveTangent = 0.0, LeaveTangent = 0.0, InterpMode = EInterpCurveMode.CIM_Linear)
+                                 )
+                      )}
+    AimModes = ((ZoomFOV = 39.5999985, CameraSensitivityMultiplier = 1.0, FrictionMultiplier = 1.0, AdhesionMultiplier = 1.0, bScoped = FALSE)
+               )
+    Begin Object Class=ForceFeedbackWaveform Name=FireRumble0
+    End Object
+    WeaponFireRumble = FireRumble0
+    Begin Object Class=ForceFeedbackWaveform Name=OverheatRumble0
+    End Object
+    WeaponOverheatedRumble = OverheatRumble0
+    Begin Object Class=SFXCameraShakeBase Name=FiringShake0
+    End Object
+    FiringShake = FiringShake0
+    Begin Object Class=SFXCameraShakeBase Name=TightAimFiringShake0
+    End Object
+    TightAimFiringShake = TightAimFiringShake0
+    RecoilInterpSpeed = 100.0
+    bScaleFireAnimByFireRate = TRUE
+    weaponType = EBioItemWeaponRangedType.ITEM_WEAPON_RANGED_ASSAULT_RIFLE
+}
+

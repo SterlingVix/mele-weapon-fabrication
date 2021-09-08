@@ -123,4 +123,3 @@ export const ZoomAccFireInterpSpeed = 0.0; // ZoomAccFireInterpSpeed = 40.0
 export const ZoomAccFirePenalty = 0.0; // ZoomAccFirePenalty = 35.0
 export const ZoomAimError = xyz(2.0, 2.0); // ZoomAimError = (X = 4.5, Y = 6.5)
 export const ZoomRecoil = 0.0; // ZoomRecoil = 0.800000012
-

@@ -1,0 +1,503 @@
+Class BioWeaponRanged extends BioWeapon
+    native
+    localized
+    config(Weapon);
+
+// Types
+struct native HeadshotTalentBinding
+{
+    var(HeadshotTalentBinding) int TalentID;
+    var(HeadshotTalentBinding) EWeaponPowerMode PowerMode;
+};
+struct native StatsClassBinding
+{
+    var(StatsClassBinding) Class<SFXWeaponStatsBase> StatsClass;
+    var(StatsClassBinding) int ManufacturerID;
+};
+enum EBioWeaponVisualEffect
+{
+    BIO_WEAPON_VISUAL_EFFECT_MESH,
+    BIO_WEAPON_VISUAL_EFFECT_MUZZLE_FLASH,
+    BIO_WEAPON_VISUAL_EFFECT_SECONDARY_MUZZLE_FLASH,
+    BIO_WEAPON_VISUAL_EFFECT_COOL_DOWN,
+    BIO_WEAPON_VISUAL_EFFECT_SABOTAGE,
+    BIO_WEAPON_VISUAL_EFFECT_WHILE_FIRING,
+};
+struct native ImpactDelayInfo
+{
+    var array<BioWeaponTraceInfo> aImpactTraceInfo;
+    var float fTimeRemaining;
+};
+struct native BioWeaponTraceInfo
+{
+    var TraceHitInfo m_hitInfo;
+    var Vector m_vHitPoint;
+    var Vector m_vHitNormal;
+    var Vector m_vTrace;
+    var Actor m_pHitActor;
+    var EBioWeaponHit m_eHit;
+};
+enum EBioWeaponHit
+{
+    BIOWEAPON_HIT_INVALID,
+    BIOWEAPON_HIT_NONE,
+    BIOWEAPON_HIT_PAWN,
+    BIOWEAPON_HIT_SHIELD,
+    BIOWEAPON_HIT_SCENERY,
+    BIOWEAPON_HIT_COUNT,
+};
+
+// Variables
+var(BioWeaponRanged) const array<StatsClassBinding> StatsClassBindings;
+var(BioWeaponRanged) const array<HeadshotTalentBinding> HeadshotTalentBindings;
+var array<ImpactDelayInfo> m_aImpactDelayQueue;
+var delegate<OnTargetHit> __OnTargetHit__Delegate;
+var transient BioVisualEffect m_visualEffects[6];
+var Name m_MuzzleSocketName;
+var Name m_MuzzleCamSocketName;
+var Name m_ImpactParameterName;
+var Name m_SourceParameterName;
+var(BioWeaponRanged) export AudioComponent oAudioComponent;
+var transient BioWeaponVFXAppearance m_pCachedVFXAppearance;
+var(BioWeaponRanged) export SFXWeaponStatsBase Stats;
+var transient float fWeaponMeshEffectValue;
+var transient float fWeaponMeshEffectTargetValue;
+var transient int m_nFireSound;
+var transient float StartFireTime;
+var transient float StopFireTime;
+var transient int ShotCount;
+var(BioWeaponRanged) transient int CurrentAimMode;
+var float m_coolDownDuration;
+var float m_CooldownTime;
+var int RemainingBurstFireCount;
+var float FireDelay;
+var float ReFireDelay;
+var config float HeadshotDamageMultiplier;
+var config int MinPelletsForPhysics;
+var float m_fCurrentHeat;
+var config float m_fProjectilesSpreadModifier;
+var config float PortArmsPistolDistance;
+var config float PortArmsShotgunDistance;
+var config float PortArmsAssaultDistance;
+var config float PortArmsSniperDistance;
+var config float m_fVehicleFireDistance;
+var config float m_fWeaponFireDistance;
+var config float m_fSniperFireDistance;
+var config int m_nTraceFireTestType;
+var config float m_fOverlapRecurseBreakoutDistance;
+var config int m_nTotalNumberStrips;
+var config int m_nTotalNumberCloseStrips;
+var config float m_nCloseStripLength;
+var config float m_fMaxVFXIntensity;
+var config float m_fMinVFXIntensity;
+var config float m_fMaxVFXDecalIntensity;
+var config float m_fMinVFXDecalIntensity;
+var transient bool bTriggerPulled;
+var transient bool bNeedsRetrigger;
+var transient bool bIsZoomed;
+var bool m_isFiring;
+var bool m_bOverheated;
+var bool m_bShootingWhileOverheatedSoundPlayed;
+var bool m_bIsMuzzleFlashVFXEnabled;
+
+// Functions
+public native function bool CanStartFiring();
+
+public simulated native function float GetPlayerAimError(float Accuracy);
+
+public simulated native function float GetRecoil();
+
+public simulated native function float GetRateOfFire();
+
+public native function EBioItemWeaponRangedType GetRangedWeaponType();
+
+public simulated native function Vector GetMuzzleLoc();
+
+public native function PlayWeaponSound(Name nmSound);
+
+public native function PlayShootingWhileOverheatedSound();
+
+public native function PlayOverheatSound();
+
+public final native function OnHide(bool bHide);
+
+public native function TickHeat(float fDeltaTime);
+
+public native function BioVISGrenade GetVisualExplosionSet();
+
+public native function BioVISWeapon GetVisualImpactSet();
+
+public native function ReleaseVisualEffect(EBioWeaponVisualEffect Effect);
+
+public native function BioVisualEffect GetVisualEffect(EBioWeaponVisualEffect Effect, optional bool bCacheEffect);
+
+public native function TickFire(float TimeDelta);
+
+public native function WeaponRanges(out float MinRange, out float BestRange, out float MaxRange);
+
+public native function BioAttributesItemWeaponRanged GetAttributes();
+
+public native function bool IsPenetratedByInstantFire(Actor oHitActor);
+
+public event function DoCoolDownEffect()
+{
+    local BioVisualEffect Effect;
+
+    m_coolDownDuration = 1.0 / Class'BioAttributes'.static.GetCurrentFloatValue(GetAttributes().m_RoundsPerSec);
+    m_CooldownTime = m_coolDownDuration;
+    Effect = GetVisualEffect(3, TRUE);
+    if (Effect != None)
+    {
+        Effect.SetPaused(FALSE);
+    }
+}
+public native function DoBulletTraceEffect(const out Vector vHitPoint);
+
+public function float GetZoomFOV()
+{
+    if (Stats == None)
+    {
+        return 90.0;
+    }
+    return Stats.AimModes[CurrentAimMode].ZoomFOV;
+}
+public function bool IsScoped()
+{
+    if (Stats == None)
+    {
+        return FALSE;
+    }
+    return Stats.AimModes[CurrentAimMode].bScoped;
+}
+public function float GetAdhesionMultiplier()
+{
+    if (Stats == None)
+    {
+        return 1.0;
+    }
+    return Stats.AimModes[CurrentAimMode].AdhesionMultiplier;
+}
+public function float GetFrictionMultiplier()
+{
+    if (Stats == None)
+    {
+        return 1.0;
+    }
+    return Stats.AimModes[CurrentAimMode].FrictionMultiplier;
+}
+public function float GetCameraSensitivityMultiplier()
+{
+    if (Stats == None)
+    {
+        return 1.0;
+    }
+    return Stats.AimModes[CurrentAimMode].CameraSensitivityMultiplier;
+}
+public function ResetFiringState()
+{
+    bTriggerPulled = FALSE;
+    bNeedsRetrigger = FALSE;
+}
+public event simulated function bool HasLoopingFire()
+{
+    if (Stats == None || Stats.FireMode != FireModes.FireMode_SemiAuto && Stats.FireMode != FireModes.FireMode_Burst)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+public event function FireOff()
+{
+    m_isFiring = FALSE;
+    if (Stats == None || Stats.FireMode != FireModes.FireMode_SemiAuto)
+    {
+        ReleaseVisualEffect(5);
+    }
+    StopFireTime = WorldInfo.GameTimeSeconds;
+}
+public event function FireOn()
+{
+    local BioVisualEffect Effect;
+
+    if (m_bOverheated)
+    {
+        return;
+    }
+    FireDelay = 0.0;
+    if (Stats != None && Stats.FireMode == FireModes.FireMode_Burst)
+    {
+        RemainingBurstFireCount = Stats.RoundsPerBurst;
+    }
+    if (Stats != None)
+    {
+        if (Stats.FireMode == FireModes.FireMode_SemiAuto || Stats.FireMode == FireModes.FireMode_Burst)
+        {
+            if (WorldInfo.GameTimeSeconds - StopFireTime >= 3.0)
+            {
+                StartFireTime = WorldInfo.GameTimeSeconds;
+                ShotCount = 0;
+            }
+        }
+        else
+        {
+            StartFireTime = WorldInfo.GameTimeSeconds;
+            ShotCount = 0;
+        }
+    }
+    m_isFiring = TRUE;
+    TickFire(0.0);
+    if (m_bIsMuzzleFlashVFXEnabled && (Stats == None || Stats.FireMode != FireModes.FireMode_SemiAuto))
+    {
+        Effect = GetVisualEffect(5, TRUE);
+        if (Effect != None)
+        {
+            Effect.SetPaused(FALSE);
+        }
+    }
+}
+public function InitializeWeapon()
+{
+    local BioItemWeaponRanged Item;
+    local StatsClassBinding Binding;
+    local string RangedItemName;
+    local string ManufacturerName;
+    local BioManufacturerDetails ItemDetails;
+
+    if (Instigator != None && Instigator.IsHumanControlled())
+    {
+        Stats = None;
+        Item = BioItemWeaponRanged(m_oItem);
+        if (Item != None)
+        {
+            if (GetStatsBinding(Item.m_manufacturer, Item.m_eWeaponRangedType, Binding))
+            {
+                Stats = new (Self) Binding.StatsClass;
+                Stats.Initialize(int(Item.m_eSophistication), Item.m_manufacturer);
+            }
+            Item.GenerateName(RangedItemName);
+            Item.GetManufacturerInfo(ItemDetails);
+            ManufacturerName = Class'BioSPGame'.static.GetSimpleString(ItemDetails.srName);
+            if (Stats != None)
+            {
+                LogInternal(((((((((("WEAPON BINDINGS:::: Found stats binding! Binding" @ Self) @ "to [") $ Stats.Class) $ "] Name: '") $ RangedItemName) $ "' Manufacturer: '") $ ManufacturerName) $ "'") @ Item.m_manufacturer) @ Item.m_eWeaponRangedType, );
+            }
+            else
+            {
+                LogInternal(((((((("WEAPON BINDINGS:::: Unable to find stats binding for:" @ Self) @ "Name: '") $ RangedItemName) $ "' Manufacturer: '") $ ManufacturerName) $ "'") @ Item.m_manufacturer) @ Item.m_eWeaponRangedType, );
+            }
+        }
+    }
+    InvManager = Instigator.InvManager;
+}
+public static function bool GetWeaponDesc(int ManufacturerID, GuiEquipSlots Slot, out stringref Description)
+{
+    local EBioItemWeaponRangedType weaponType;
+    local StatsClassBinding Binding;
+
+    switch (Slot)
+    {
+        case GuiEquipSlots.EQUIP_SLOT_Pistol:
+            weaponType = EBioItemWeaponRangedType.ITEM_WEAPON_RANGED_PISTOL;
+            break;
+        case GuiEquipSlots.EQUIP_SLOT_Shotgun:
+            weaponType = EBioItemWeaponRangedType.ITEM_WEAPON_RANGED_SHOTGUN;
+            break;
+        case GuiEquipSlots.EQUIP_SLOT_Assault:
+            weaponType = EBioItemWeaponRangedType.ITEM_WEAPON_RANGED_ASSAULT_RIFLE;
+            break;
+        case GuiEquipSlots.EQUIP_SLOT_Sniper:
+            weaponType = EBioItemWeaponRangedType.ITEM_WEAPON_RANGED_SNIPER;
+            break;
+        default:
+            return FALSE;
+    }
+    if (GetStatsBinding(ManufacturerID, weaponType, Binding))
+    {
+        Description = Binding.StatsClass.default.Description;
+        return TRUE;
+    }
+    return FALSE;
+}
+public static function bool GetStatsBinding(int ManufacturerID, EBioItemWeaponRangedType weaponType, out StatsClassBinding OutBinding)
+{
+    local StatsClassBinding Binding;
+
+    foreach default.StatsClassBindings(Binding, )
+    {
+        if (Binding.ManufacturerID == ManufacturerID && int(Binding.StatsClass.default.weaponType) == int(weaponType))
+        {
+            OutBinding = Binding;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+public simulated function Rotator GetAdjustedAim(Vector StartFireLoc)
+{
+    local Rotator AimRot;
+    local float AimingError;
+    local SFXInventoryManager Inv;
+
+    AimRot = Instigator.GetAdjustedAimFor(Self, StartFireLoc);
+    Inv = SFXInventoryManager(InvManager);
+    if ((Inv != None && Instigator != None) && Instigator.IsHumanControlled())
+    {
+        if (Stats == None || Stats.bEnableAccuracy)
+        {
+            AimingError = GetPlayerAimError(Inv.Accuracy) * 182.044449;
+            if (AimingError > float(0))
+            {
+                AimRot.Pitch += int(AimingError * (0.5 - FRand()));
+                AimRot.Yaw += int(AimingError * (0.5 - FRand()));
+            }
+        }
+    }
+    return AimRot;
+}
+public simulated function CycleMagnification()
+{
+    if (Stats == None)
+    {
+        return;
+    }
+    ++CurrentAimMode;
+    if (CurrentAimMode >= Stats.AimModes.Length)
+    {
+        CurrentAimMode = 0;
+    }
+}
+public simulated function SetZoomed(bool bState)
+{
+    bIsZoomed = bState;
+    if (Stats != None)
+    {
+        if (bIsZoomed && Stats.AimModes[CurrentAimMode].bScoped)
+        {
+            OnHide(TRUE);
+        }
+        else
+        {
+            OnHide(FALSE);
+        }
+    }
+}
+public native function SetMuzzleFlashState(bool bState);
+
+public native function BioPawn DeactivateWeapon();
+
+public event native function bool AttachToMesh(SkeletalMeshComponent MeshComponent, optional Name SocketName, optional bool bCinematicsMode);
+
+public native function BioItemWeapon SetItem(BioItemWeapon oItem);
+
+public delegate function OnTargetHit(bool bIsHeadShot);
+
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    StatsClassBindings = ((StatsClass = Class'SFXWeaponStats_AvengerAssaultRifle', ManufacturerID = 326),
+                          (StatsClass = Class'SFXWeaponStats_Reaper', ManufacturerID = 326),
+                          (StatsClass = Class'SFXWeaponStats_Scimitar', ManufacturerID = 326),
+                          (StatsClass = Class'SFXWeaponStats_Edge', ManufacturerID = 326),
+                          (StatsClass = Class'SFXWeaponStats_Banshee', ManufacturerID = 412),
+                          (StatsClass = Class'SFXWeaponStats_Hammer', ManufacturerID = 412),
+                          (StatsClass = Class'SFXWeaponStats_Hurricane', ManufacturerID = 412),
+                          (StatsClass = Class'SFXWeaponStats_StrikerPistol', ManufacturerID = 412),
+                          (StatsClass = Class'SFXWeaponStats_Lancer', ManufacturerID = 327),
+                          (StatsClass = Class'SFXWeaponStats_AvengerSniperRifle', ManufacturerID = 327),
+                          (StatsClass = Class'SFXWeaponStats_Storm', ManufacturerID = 327),
+                          (StatsClass = Class'SFXWeaponStats_Kessler', ManufacturerID = 327),
+                          (StatsClass = Class'SFXWeaponStats_Terminator', ManufacturerID = 598),
+                          (StatsClass = Class'SFXWeaponStats_Thunder', ManufacturerID = 525),
+                          (StatsClass = Class'SFXWeaponStats_Equalizer', ManufacturerID = 525),
+                          (StatsClass = Class'SFXWeaponStats_Tornado', ManufacturerID = 525),
+                          (StatsClass = Class'SFXWeaponStats_Stiletto', ManufacturerID = 525),
+                          (StatsClass = Class'SFXWeaponStats_Raptor', ManufacturerID = 325),
+                          (StatsClass = Class'SFXWeaponStats_StrikerSniperRifle', ManufacturerID = 325),
+                          (StatsClass = Class'SFXWeaponStats_Firestorm', ManufacturerID = 325),
+                          (StatsClass = Class'SFXWeaponStats_Stinger', ManufacturerID = 325),
+                          (StatsClass = Class'SFXWeaponStats_Tsunami', ManufacturerID = 582),
+                          (StatsClass = Class'SFXWeaponStats_Naginata', ManufacturerID = 582),
+                          (StatsClass = Class'SFXWeaponStats_Katana', ManufacturerID = 582),
+                          (StatsClass = Class'SFXWeaponStats_Raikou', ManufacturerID = 582),
+                          (StatsClass = Class'SFXWeaponStats_Breaker', ManufacturerID = 584),
+                          (StatsClass = Class'SFXWeaponStats_Harpoon', ManufacturerID = 584),
+                          (StatsClass = Class'SFXWeaponStats_Armageddon', ManufacturerID = 584),
+                          (StatsClass = Class'SFXWeaponStats_Razer', ManufacturerID = 584),
+                          (StatsClass = Class'SFXWeaponStats_Crossfire', ManufacturerID = 324),
+                          (StatsClass = Class'SFXWeaponStats_Punisher', ManufacturerID = 324),
+                          (StatsClass = Class'SFXWeaponStats_Avalanche', ManufacturerID = 324),
+                          (StatsClass = Class'SFXWeaponStats_Brawler', ManufacturerID = 324),
+                          (StatsClass = Class'SFXWeaponStats_SpectreAssaultRifle', ManufacturerID = 502),
+                          (StatsClass = Class'SFXWeaponStats_SpectreSniperRifle', ManufacturerID = 502),
+                          (StatsClass = Class'SFXWeaponStats_SpectreShotgun', ManufacturerID = 502),
+                          (StatsClass = Class'SFXWeaponStats_SpectrePistol', ManufacturerID = 502),
+>>>>>>>>>>>>>>>           (StatsClass = Class'SFXWeaponStats_CustomAssaultRifle_0', ManufacturerID = 505),
+                          (StatsClass = Class'SFXWeaponStats_SpectreAssaultRifle', ManufacturerID = 503),
+                          (StatsClass = Class'SFXWeaponStats_SpectreSniperRifle', ManufacturerID = 503),
+                          (StatsClass = Class'SFXWeaponStats_SpectreShotgun', ManufacturerID = 503),
+                          (StatsClass = Class'SFXWeaponStats_SpectrePistol', ManufacturerID = 503),
+                          (StatsClass = Class'SFXWeaponStats_SpectreAssaultRifle', ManufacturerID = 504),
+                          (StatsClass = Class'SFXWeaponStats_SpectreSniperRifle', ManufacturerID = 504),
+                          (StatsClass = Class'SFXWeaponStats_SpectreShotgun', ManufacturerID = 504),
+                          (StatsClass = Class'SFXWeaponStats_SpectrePistol', ManufacturerID = 504),
+                          (StatsClass = Class'SFXWeaponStats_Kovalyov', ManufacturerID = 583),
+                          (StatsClass = Class'SFXWeaponStats_Volkov', ManufacturerID = 583),
+                          (StatsClass = Class'SFXWeaponStats_Sokolov', ManufacturerID = 583),
+                          (StatsClass = Class'SFXWeaponStats_Karpov', ManufacturerID = 583),
+                          (StatsClass = Class'SFXWeaponStats_Geth', ManufacturerID = 436),
+                          (StatsClass = Class'SFXWeaponStats_Judgement', ManufacturerID = 598),
+                          (StatsClass = Class'SFXWeaponStats_Harpy', ManufacturerID = 599),
+                          (StatsClass = Class'SFXWeaponStats_Pinnacle', ManufacturerID = 600),
+                          (StatsClass = Class'SFXWeaponStats_Cobra', ManufacturerID = 601),
+                          (StatsClass = Class'SFXWeaponStats_Gorgon', ManufacturerID = 599),
+                          (StatsClass = Class'SFXWeaponStats_Torrent', ManufacturerID = 600),
+                          (StatsClass = Class'SFXWeaponStats_DiamondBack', ManufacturerID = 601),
+                          (StatsClass = Class'SFXWeaponStats_Executioner', ManufacturerID = 598),
+                          (StatsClass = Class'SFXWeaponStats_Hydra', ManufacturerID = 599),
+                          (StatsClass = Class'SFXWeaponStats_Savage', ManufacturerID = 600),
+                          (StatsClass = Class'SFXWeaponStats_Viper', ManufacturerID = 601),
+                          (StatsClass = Class'SFXWeaponStats_LightningStrike', ManufacturerID = 598),
+                          (StatsClass = Class'SFXWeaponStats_Titan', ManufacturerID = 599),
+                          (StatsClass = Class'SFXWeaponStats_Helix', ManufacturerID = 600),
+                          (StatsClass = Class'SFXWeaponStats_Python', ManufacturerID = 601)
+                         )
+    HeadshotTalentBindings = ((TalentID = 0, PowerMode = EWeaponPowerMode.WEAPON_POWER_MODE_MARKSMAN),
+                              (TalentID = 131, PowerMode = EWeaponPowerMode.WEAPON_POWER_MODE_MARKSMAN),
+                              (TalentID = 150, PowerMode = EWeaponPowerMode.WEAPON_POWER_MODE_MARKSMAN),
+                              (TalentID = 158, PowerMode = EWeaponPowerMode.WEAPON_POWER_MODE_MARKSMAN),
+                              (TalentID = 21, PowerMode = EWeaponPowerMode.WEAPON_POWER_MODE_ASSASSINATION)
+                             )
+    m_MuzzleSocketName = 'Flash'
+    m_MuzzleCamSocketName = 'MuzzleCam'
+    m_ImpactParameterName = 'Impact'
+    m_SourceParameterName = 'Source'
+    HeadshotDamageMultiplier = 2.0
+    MinPelletsForPhysics = 4
+    m_fProjectilesSpreadModifier = 0.200000003
+    PortArmsPistolDistance = 15.0
+    PortArmsShotgunDistance = 10.0
+    PortArmsAssaultDistance = 10.0
+    PortArmsSniperDistance = 35.0
+    m_fVehicleFireDistance = 60000.0
+    m_fWeaponFireDistance = 20000.0
+    m_fSniperFireDistance = 40000.0
+    m_fOverlapRecurseBreakoutDistance = 50.0
+    m_nTotalNumberStrips = 10
+    m_nTotalNumberCloseStrips = 2
+    m_nCloseStripLength = 1500.0
+    m_bShootingWhileOverheatedSoundPlayed = TRUE
+    m_bIsMuzzleFlashVFXEnabled = TRUE
+    Begin Object Class=SkeletalMeshComponent Name=oSkeletalMeshComponent
+        ReplacementPrimitive = None
+    End Object
+    SkelMeshComp = oSkeletalMeshComponent
+    Begin Object Class=BioDamageType Name=pDefaultDamage
+        Begin Object Class=BioAttributesDamage Name=s_pAttributes
+        End Object
+        m_pAttributes = s_pAttributes
+    End Object
+    m_pDamage = pDefaultDamage
+    Mesh = oSkeletalMeshComponent
+    Components = (oSkeletalMeshComponent)
+}

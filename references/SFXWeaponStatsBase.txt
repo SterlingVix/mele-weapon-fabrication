@@ -1,0 +1,280 @@
+Class SFXWeaponStatsBase within BioWeaponRanged
+    native
+    config(Weapon);
+
+// Types
+struct native WeaponAimMode
+{
+    var(WeaponAimMode) config float ZoomFOV;
+    var(WeaponAimMode) config float CameraSensitivityMultiplier;
+    var(WeaponAimMode) config float FrictionMultiplier;
+    var(WeaponAimMode) config float AdhesionMultiplier;
+    var(WeaponAimMode) config bool bScoped;
+};
+struct native ManufacturerModifier
+{
+    var int GameEffectID;
+    var float Modifier;
+    var EBioAttrModType modType;
+};
+enum FireModes
+{
+    FireMode_None,
+    FireMode_SemiAuto,
+    FireMode_FullAuto,
+    FireMode_Burst,
+    FireMode_Ramping,
+};
+struct native HeadshotDamageBonus
+{
+    var(HeadshotDamageBonus) config int Rank;
+    var(HeadshotDamageBonus) config float Bonus;
+};
+struct native ZoomSnapInfo
+{
+    var(ZoomSnapInfo) config float OuterSnapAngle;
+    var(ZoomSnapInfo) config float InnerSnapAngle;
+    var(ZoomSnapInfo) config float SnapOffsetMag;
+    var(ZoomSnapInfo) config EAimNodes AimNode;
+};
+
+// Variables
+var(Accuracy) config InterpCurveFloat AccBonusMapping;
+var(Accuracy) config InterpCurveFloat ConeMaxAccBonusMapping;
+var(Accuracy) config InterpCurveFloat ConeAccBonusMapping;
+var(Recoil) config InterpCurveFloat RecoilMaxAccBonusMapping;
+var(Recoil) config InterpCurveFloat RecoilAccBonusMapping;
+var(ZoomSnap) config array<ZoomSnapInfo> ZoomSnapList;
+var(Weapon) config array<HeadshotDamageBonus> HeadshotPowerDamageBonus;
+var(Weapon) array<Vector2D> PelletSpread;
+var transient array<ManufacturerModifier> ManufacturerModifiers;
+var(Weapon) config array<WeaponAimMode> AimModes;
+var(Animation) array<AnimSet> MaleWeaponAnimSets;
+var(Animation) array<AnimSet> FemaleWeaponAnimSets;
+var(Friction) config Vector FrictionTargetOffset;
+var(Accuracy) config Vector2D AimError;
+var(ZoomAccuracy) config Vector2D ZoomAimError;
+var(Friction) config Vector2D FrictionMultiplierRange;
+var(Adhesion) config Vector2D AdhesionStrengthRange;
+var(Weapon) config Vector2D DamageRange;
+var(Weapon) config Vector2D HeatPerShotRange;
+var(Weapon) config Vector2D HeatLossRateRange;
+var(Weapon) config Vector2D OverheatedHeatLossRateRange;
+var(Camera) SFXCameraSetup CameraSetup;
+var(Animation) AnimSet DrawAnimset;
+var(Effects) ForceFeedbackWaveform WeaponFireRumble;
+var(Effects) ForceFeedbackWaveform WeaponOverheatedRumble;
+var(Effects) SFXCameraShakeBase FiringShake;
+var(Effects) SFXCameraShakeBase TightAimFiringShake;
+var(Crosshair) config float CrosshairErrorFactor;
+var(Accuracy) config float AccFirePenalty;
+var(Accuracy) config float AccFireInterpSpeed;
+var(Accuracy) config float ZoomConeAccBonus;
+var(ZoomAccuracy) config float ZoomAccFirePenalty;
+var(ZoomAccuracy) config float ZoomAccFireInterpSpeed;
+var(Recoil) config float Recoil;
+var(Recoil) config float ZoomRecoil;
+var(Recoil) config float RecoilInterpSpeed;
+var(Recoil) config float RecoilFadeSpeed;
+var(Recoil) config float RecoilZoomFadeSpeed;
+var(Recoil) config float RecoilCap;
+var(Recoil) config float ZoomRecoilCap;
+var(Recoil) config float RecoilYawScale;
+var(Recoil) config float RecoilYawFrequency;
+var(Friction) config float MinFrictionDistance;
+var(Friction) config float MaxFrictionDistance;
+var(Friction) config float PeakFrictionDistance;
+var(Friction) config float PeakFrictionRadiusScale;
+var(Friction) config float PeakFrictionHeightScale;
+var(Adhesion) config float MinAdhesionDistance;
+var(Adhesion) config float MaxAdhesionDistance;
+var(Adhesion) config float MinAdhesionVelocity;
+var(Adhesion) config float CamInputAdhesionDamping;
+var(Adhesion) config float MaxLateralAdhesionDist;
+var(Adhesion) config float AimCorrectionAmount;
+var(Magnetism) config float MagneticCorrectionThresholdAngle;
+var(Magnetism) config float MaxMagneticCorrectionAngle;
+var(ZoomSnap) config float MinZoomSnapDistance;
+var(ZoomSnap) config float MaxZoomSnapDistance;
+var(Weapon) config float RateOfFire;
+var(Weapon) config float MinRefireTime;
+var(Weapon) config int RoundsPerBurst;
+var(SFXWeaponStatsBase) transient float Damage;
+var(SFXWeaponStatsBase) transient float HeatPerShot;
+var(SFXWeaponStatsBase) transient float HeatLossRate;
+var(SFXWeaponStatsBase) transient float OverheatedHeatLossRate;
+var(Weapon) config float RampFirePct;
+var(Weapon) config float RampFireTime;
+var(Weapon) config stringref Description;
+var(Weapon) config float UIDPSFudgeFactor;
+var(Accuracy) config bool bEnableAccuracy;
+var(Recoil) config bool bRemapAccToRecoil;
+var(Friction) config bool bFrictionEnabled;
+var(Friction) config bool bFrictionDistanceScalingEnabled;
+var(Adhesion) config bool bAdhesionEnabled;
+var(Adhesion) config bool bAdhesionDuringCam;
+var(ZoomSnap) config bool bZoomSnapEnabled;
+var(Weapon) config bool bScaleFireAnimByFireRate;
+var(VFX) config bool bDisableTracers;
+var(Animation) bool bOverrideAnimsets;
+var(Weapon) EBioItemWeaponRangedType weaponType;
+var(Weapon) config FireModes FireMode;
+
+// Functions
+public final native function float GetDamageFromItem(BioItemWeaponRanged Item);
+
+public final native function float GetHeatPerShotFromItem(BioItemWeaponRanged Item);
+
+public final native function float GetRateOfFireFromItem(BioItemWeaponRanged Item);
+
+public final native function Initialize(int sophistication, int ManufacturerID);
+
+public function float GetDamagePerSecondValue(BioItemWeaponRanged Item)
+{
+    local float RampBurstRatio;
+    local float BurstsPerSecond;
+    local float DamagePerShot;
+    local float RoundsPerSecond;
+    local float SecondsPerRound;
+    local float EffectiveRPM;
+    local int NumPellets;
+
+    RoundsPerSecond = GetRateOfFireFromItem(Item) / 60.0;
+    RoundsPerSecond = FMax(1.0, RoundsPerSecond);
+    NumPellets = Max(1, PelletSpread.Length);
+    DamagePerShot = GetDamageFromItem(Item) * float(NumPellets);
+    switch (default.FireMode)
+    {
+        case FireModes.FireMode_SemiAuto:
+            RoundsPerSecond = FMin(8.0, RoundsPerSecond);
+            return RoundsPerSecond * DamagePerShot;
+        case FireModes.FireMode_FullAuto:
+            return RoundsPerSecond * DamagePerShot;
+        case FireModes.FireMode_Burst:
+            BurstsPerSecond = RoundsPerSecond / (float(RoundsPerBurst) + RoundsPerSecond * MinRefireTime);
+            BurstsPerSecond = FMax(1.0, BurstsPerSecond);
+            return (BurstsPerSecond * float(RoundsPerBurst)) * DamagePerShot;
+        case FireModes.FireMode_Ramping:
+            RampBurstRatio = FMin(1.0, (1.0 - RampFirePct) + RampFirePct / RampFireTime);
+            return (RoundsPerSecond * RampBurstRatio) * DamagePerShot;
+        default:
+    }
+    return 1.0;
+}
+public function float GetHeatsinkEfficiencyValue(BioItemWeaponRanged Item)
+{
+    local float DamageRampUp;
+    local int NumShots;
+    local float ShotHeatIni;
+    local float DamagePerShot;
+    local int NumPellets;
+    local float TimeToCool;
+    local float TimeToOverheat;
+    local float DamageToOverheat;
+    local float Efficiency;
+    local float SecondsPerRound;
+    local float ShotHeat;
+    local float HeatPerBurstCycle;
+    local float HeatRemaining;
+    local float RemainingShots;
+    local int NumBursts;
+
+    NumPellets = Max(1, PelletSpread.Length);
+    DamagePerShot = GetDamageFromItem(Item) * float(NumPellets);
+    SecondsPerRound = 60.0 / GetRateOfFireFromItem(Item);
+    ShotHeatIni = FMin(1.0, GetHeatPerShotFromItem(Item));
+    TimeToCool = FMin(10.0, 1.0 / OverheatedHeatLossRate);
+    switch (default.FireMode)
+    {
+        case FireModes.FireMode_SemiAuto:
+            SecondsPerRound = FMax(0.349999994, SecondsPerRound);
+            ShotHeat = FMax(0.00100000005, ShotHeatIni - HeatLossRate * SecondsPerRound);
+            NumShots = int((1.0 - ShotHeatIni) / ShotHeat);
+            DamageToOverheat = DamagePerShot * float((NumShots + 1));
+            TimeToOverheat = SecondsPerRound * float(NumShots);
+            Efficiency = DamageToOverheat / (TimeToOverheat + TimeToCool);
+            break;
+        case FireModes.FireMode_FullAuto:
+            ShotHeat = FMax(0.00100000005, ShotHeatIni - HeatLossRate * SecondsPerRound);
+            NumShots = int((1.0 - ShotHeatIni) / ShotHeat);
+            DamageToOverheat = DamagePerShot * float((NumShots + 1));
+            TimeToOverheat = SecondsPerRound * float(NumShots);
+            Efficiency = DamageToOverheat / (TimeToOverheat + TimeToCool);
+            break;
+        case FireModes.FireMode_Burst:
+            HeatPerBurstCycle = (float(RoundsPerBurst) * ShotHeatIni - (float((RoundsPerBurst - 1)) * HeatLossRate) * SecondsPerRound) - HeatLossRate * MinRefireTime;
+            NumBursts = int(1.0 / HeatPerBurstCycle);
+            HeatRemaining = 1.0 - float(NumBursts) * HeatPerBurstCycle;
+            RemainingShots = (HeatRemaining - ShotHeatIni) / (ShotHeatIni - HeatLossRate * SecondsPerRound) + 1.0;
+            DamageToOverheat = DamagePerShot * float((RoundsPerBurst * NumBursts + int(RemainingShots)));
+            TimeToOverheat = SecondsPerRound * float((RoundsPerBurst * NumBursts + int(RemainingShots))) + MinRefireTime * float(NumBursts);
+            Efficiency = DamageToOverheat / (TimeToOverheat + TimeToCool);
+            break;
+        case FireModes.FireMode_Ramping:
+            ShotHeat = FMax(0.00100000005, ShotHeatIni - HeatLossRate * SecondsPerRound);
+            NumShots = int((1.0 - ShotHeatIni) / ShotHeat);
+            TimeToOverheat = SecondsPerRound * float(NumShots);
+            DamageRampUp = (DamagePerShot * FMax(0.00999999978, 1.0 - 0.5 * RampFirePct)) / SecondsPerRound;
+            if (TimeToOverheat > RampFireTime)
+            {
+                DamageToOverheat = DamageRampUp + ((DamagePerShot * float((NumShots + 1))) * (TimeToOverheat - RampFireTime)) / TimeToOverheat;
+            }
+            else
+            {
+                DamageToOverheat = (DamageRampUp * (RampFireTime - TimeToOverheat)) / RampFireTime;
+            }
+            Efficiency = DamageToOverheat / (TimeToOverheat + TimeToCool);
+            break;
+        default:
+    }
+    return Efficiency;
+}
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    ZoomSnapList = ((OuterSnapAngle = 5.0, InnerSnapAngle = 0.5, SnapOffsetMag = 20.0, AimNode = EAimNodes.AimNode_Cover),
+                    (OuterSnapAngle = 3.0, InnerSnapAngle = 0.5, SnapOffsetMag = 15.0, AimNode = EAimNodes.AimNode_Head),
+                    (OuterSnapAngle = 10.0, InnerSnapAngle = 1.0, SnapOffsetMag = 50.0, AimNode = EAimNodes.AimNode_Chest)
+                   )
+    FrictionTargetOffset = (X = 0.0, Y = 0.0, Z = 22.0)
+    FrictionMultiplierRange = (X = 0.0, Y = 0.379999995)
+    AdhesionStrengthRange = (X = 0.0, Y = 1.0)
+    Begin Object Class=ForceFeedbackWaveform Name=FireRumble0
+    End Object
+    WeaponFireRumble = FireRumble0
+    Begin Object Class=ForceFeedbackWaveform Name=OverheatRumble0
+        Samples = ((Duration = 0.75, LeftAmplitude = 33, RightAmplitude = 33, LeftFunction = EWaveformFunction.WF_LinearDecreasing, RightFunction = EWaveformFunction.WF_LinearDecreasing)
+                  )
+    End Object
+    WeaponOverheatedRumble = OverheatRumble0
+    Begin Object Class=SFXCameraShakeBase Name=FiringShake0
+    End Object
+    FiringShake = FiringShake0
+    Begin Object Class=SFXCameraShakeBase Name=TightAimFiringShake0
+    End Object
+    TightAimFiringShake = TightAimFiringShake0
+    CrosshairErrorFactor = 35.0
+    RecoilCap = 40.0
+    ZoomRecoilCap = 40.0
+    MaxFrictionDistance = 5000.0
+    PeakFrictionDistance = 2000.0
+    PeakFrictionRadiusScale = 1.25
+    PeakFrictionHeightScale = 0.400000006
+    MinAdhesionDistance = 100.0
+    MaxAdhesionDistance = 6000.0
+    MinAdhesionVelocity = 80.0
+    CamInputAdhesionDamping = 0.400000006
+    MaxLateralAdhesionDist = 125.0
+    MagneticCorrectionThresholdAngle = 0.5
+    MaxMagneticCorrectionAngle = 0.25
+    MinZoomSnapDistance = 500.0
+    MaxZoomSnapDistance = 4000.0
+    UIDPSFudgeFactor = 1.0
+    bEnableAccuracy = TRUE
+    bFrictionEnabled = TRUE
+    bAdhesionEnabled = TRUE
+    bAdhesionDuringCam = TRUE
+    bZoomSnapEnabled = TRUE
+    OverheatedHeatLossRateRange = (X = 0.159999996, Y = 0.25)
+}
